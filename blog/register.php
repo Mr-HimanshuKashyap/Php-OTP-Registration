@@ -18,11 +18,11 @@
 <form action="endpoint.php" method="post">
 <div class="mb-3 first_box">
     <label for="name" class="form-label">Name</label>
-    <input type="text" class="form-control" id="name" name="name">
+    <input type="text" class="form-control" id="name" name="name" required>
   </div>
   <div class="mb-3 first_box">
     <label for="email" class="form-label">Email address</label>
-    <input type="email" class="form-control" id="email" name="email">
+    <input type="email" class="form-control" id="email" name="email" required>
   </div>
   <div class="mb-3 first_box">
     <label for="phone" class="form-label">Phone</label>
@@ -30,7 +30,11 @@
   </div>
   <div class="mb-3 first_box">
     <label for="password" class="form-label">Password</label>
-    <input type="password" class="form-control" id="password" name="password">
+    <input type="password" class="form-control" id="password" name="password" required>
+  </div>
+  <div class="mb-3 first_box">
+    <label for="cpassword" class="form-label">Confirm Password</label>
+    <input type="password" class="form-control" id="cpassword" name="cpassword" required>
   </div>
 
  <div class="mb-3 first_box">

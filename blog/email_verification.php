@@ -1,3 +1,6 @@
+<?php
+include 'connection.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +15,9 @@
 <div class="container">
 <div class="text-center">
     <h3>Enter OTP</h3>
+</div>
+<div>
+  <p class="bg-success text-white px-4"><?php echo $_SESSION['msg'] ?></p>
 </div>
 <form action="endpoint.php" method="post">
 <div class="mb-3 first_box">

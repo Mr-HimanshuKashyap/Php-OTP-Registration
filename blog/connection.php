@@ -26,28 +26,35 @@ class Model
         $email = trim($_POST['email']);
         $phone = trim($_POST['phone']);
         $password = trim($_POST['password']);
+        $cpassword = trim($_POST['cpassword']);
         $token = rand(11111,99999);
+
 
         //Email exists or not
         $check_email = "SELECT user_email FROM user_reg WHERE user_email='$email' LIMIT 1";
         $result = $this->conn->query($check_email);
         if($result->num_rows > 0)
         {
-            
-            header("Location:register.php?err=" . urlencode("Email is already in use. Please use another one"));
-            return false;
+           echo "<script>alert('Email already Exist')</script>";
+           echo("<script>window.location = 'register.php';</script>");
         }
+        elseif($password != $cpassword)
+        {
+            echo "<script>alert('Password incorrect')</script>";
+            echo("<script>window.location = 'register.php';</script>");
+        }
+
         
         else{   
-        $sql = "INSERT INTO ".$this->tbname."(user_name, user_email, user_phone, user_password, otp) VALUES ('$name','$email','$phone','$password','$token')";
+        $sql = "INSERT INTO ".$this->tbname."(user_name, user_email, user_phone, user_password, confirm_pass, otp) VALUES ('$name','$email','$phone','$password','$cpassword','$token')";
         $result = $this->conn->query($sql);
         if($result){
             $subject = "OTP Verification";
-            $body = "Your verification OTP is".$token;
+            $body = "Your verification OTP is ".$token;
             $headers = "From: himanshu.kashyap@anviam.com"; 
             if(mail($email,$subject,$body,$headers)){
-                echo "check your mail";
-                // header('Location: email_verification.php');
+                $_SESSION['msg'] = "Check your mail for an OTP";
+                header('Location: email_verification.php');
             }
             else{
                 echo "email failed";
@@ -66,7 +73,8 @@ class Model
         $result = $this->conn->query($sql);
         // $row  = mysqli_affected_rows($result);
         if(mysqli_affected_rows($this->conn)==0){
-           die ("Verification code failed.");
+            echo "<script>alert('Verification code failed')</script>";
+            echo("<script>window.location = 'email_verification.php';</script>");
           
         }
         else{
@@ -77,9 +85,10 @@ class Model
     }
 
     public function login_verify(){
-        if ( !isset($_POST['email'], $_POST['password']) ) {
+        if ( empty($_POST['email']) && ($_POST['password']) ) {
+
             // Could not get the data that should have been sent.
-            exit('Please fill both the email and password fields!');
+            echo 'Please fill both the email and password fields!';
         }
       
         if ($stmt = $this->conn->prepare('SELECT id, user_password FROM user_reg WHERE user_email = ?')) {
@@ -97,21 +106,84 @@ class Model
                 if ($_POST['password'] === $password) {
                     // Verification success! User has logged-in!
                     // Create sessions, so we know the user is logged in, they basically act like cookies but remember the data on the server.
-                    session_regenerate_id();
                     $_SESSION['loggedin'] = TRUE;
                     $_SESSION['name'] = $_POST['email'];
                     $_SESSION['id'] = $id;
-                    header('Location: index.php');
+                    header('Location: blog.php');
                 } else {
                     // Incorrect password
-                    echo 'Incorrect email or password!';
+                    echo "<script>alert('Incorrect username or password')</script>";
+                    echo("<script>window.location = 'login.php';</script>");
                 }
             } else {
                 // Incorrect email
-                echo 'Incorrect email or password!';
+                echo "<script>alert('Incorrect username or password')</script>";
+                echo("<script>window.location = 'login.php';</script>");
             }
             $stmt->close();
         }
+    }
+
+    public function blog_post(){
+        global $conn;
+        $title = trim($_POST['title']);
+        $content = trim($_POST['content']);  
+        $sql = "INSERT INTO user_blog (title, content) VALUES ('$title','$content')";
+        $result = $this->conn->query($sql);
+        if($result){
+            header('Location: index.php');
+        }
+    }
+
+    public function fetch_products(){
+        global $conn;
+        $sql = "SELECT * FROM user_blog";
+        $result = $this->conn->query($sql);
+        return $result;
+        
+    }
+
+    public function display_detail($id){
+        global $conn;
+        $sql = "SELECT * FROM user_blog where id=$id";
+        $result = $this->conn->query($sql);
+        if($result->num_rows>0){
+            $row = $result->fetch_assoc();
+            
+        }
+        return $row;
+    }
+
+    public function insert_comment(){
+        $userid = $_SESSION['id'];
+        $username = $_SESSION['name'];      
+        $postid = $_POST['id'];      
+        $comment = $_POST['comment'];
+        if($comment != ""){
+            $sql = "INSERT INTO user_comments(user_id, post_id, username, comment) VALUES ('$userid','$postid','$username','$comment')";
+            $result = $this->conn->query($sql);
+            if($result){
+                header("Location:view.php?id=" .$postid);
+            }
+            
+            
+        }   
+    }
+
+    public function display_comment($id){ 
+        $sql = "SELECT comment, username FROM user_comments WHERE  post_id ='$id'ORDER BY id desc ";
+        $result = $this->conn->query($sql);
+        if($result!=false && $result->num_rows>0){
+            $arr = array();
+            while($row = $result->fetch_assoc()){
+                $arr[] = $row;
+            }
+            return $arr;
+        }
+        else{
+            return 0;
+        }
+        
     }
    
 }
